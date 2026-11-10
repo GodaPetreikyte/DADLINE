@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DADLINE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1>DAD<span>LINE</span></h1>
+      <div class="top-btns">
+        <button class="icon-btn" id="helpBtn" aria-label="How to play" title="How to play">?</button>
+        <button class="icon-btn" id="muteBtn" aria-label="Mute sound" title="Mute (M)">&#9835;</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="board-panel">
+        <div class="board-wrap" id="boardWrap">
+          <canvas id="board" aria-label="House board"></canvas>
+          <div class="event-card hidden" id="eventCard" role="status" aria-live="assertive">
+            <canvas id="eventIcon" width="16" height="16"></canvas>
+            <div>
+              <div class="event-title" id="eventTitle"></div>
+              <div class="event-text" id="eventText"></div>
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="hint">Roll the dice to start your turn.</p>
+      </section>
+
+      <aside class="hud">
+        <div class="phone" id="phone">
+          <div class="phone-ear"></div>
+          <div class="phone-screen">
+            <div class="lcd-top">&#9742; CALLER ID:</div>
+            <div class="lcd-name">JOHN MECHANIC</div>
+            <div class="lcd-rings"><span id="rings">10</span><small>RINGS LEFT</small></div>
+            <div class="ringbar" id="ringBar"></div>
+          </div>
+          <div class="phone-keys"><i></i><i></i><i></i></div>
+        </div>
+
+        <div class="panel dice-panel">
+          <div class="dice-row">
+            <figure><canvas id="dieMove" width="16" height="16"></canvas><figcaption>MOVE</figcaption></figure>
+            <figure><canvas id="dieChaos" width="16" height="16"></canvas><figcaption>CHAOS</figcaption></figure>
+          </div>
+          <div class="steps" id="steps">TURN 1</div>
+          <div class="actions">
+            <button class="btn" id="rollBtn">ROLL</button>
+            <button class="btn btn-alt" id="stayBtn" disabled>STAY</button>
+          </div>
+          <div class="chute-prompt hidden" id="chutePrompt">
+            <p id="chuteText">Slide down the laundry chute? Risky: 1 in 3 chance you get stuck (&minus;1 ring).</p>
+            <div class="actions">
+              <button class="btn" id="chuteYes">SLIDE!</button>
+              <button class="btn btn-alt" id="chuteNo">NO</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel status" id="status"></div>
+
+        <div class="panel">
+          <ul class="log" id="log" aria-live="polite"></ul>
+        </div>
+
+        <details class="panel legend">
+          <summary>CHAOS DIE</summary>
+          <ul id="legend"></ul>
+        </details>
+
+        <div class="panel debug hidden" id="debug">
+          <label>Move <select id="dbgMove"><option value="">rnd</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label>Chaos <select id="dbgChaos"><option value="">rnd</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div class="overlay" id="startScreen">
+    <div class="dialog">
+      <h2>DAD<span>LINE</span></h2>
+      <p>Dad's Nokia is ringing on the hall table. <b>Caller ID: JOHN MECHANIC.</b> It's about the car! Dad has been waiting for this call all week.</p>
+      <p>Dad is somewhere in the house, probably "just checking something". Find him and hand him the phone <b>before John hangs up</b>.</p>
+      <ul class="rules">
+        <li><b>ROLL</b> both dice. The <b class="red">Chaos die</b> happens first, then move up to the <b>Move die</b>.</li>
+        <li>Click a glowing tile to walk there. Each turn costs <b>1 ring</b>.</li>
+        <li>Dark rooms are unsearched. Walk in to look for Dad.</li>
+        <li>Toys block you unless <b class="gold">MEGA-BOT</b>, your hero figurine (Chaos 6), saves the day. Two risky shortcuts: the <b>stuck door</b> (walk into it and jiggle the handle) and the <b>laundry chute</b>.</li>
+      </ul>
+      <button class="btn big" id="startBtn">START</button>
+      <p class="keys">Space = roll &middot; Enter = stay &middot; M = mute</p>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="endScreen">
+    <div class="dialog">
+      <h2 id="endTitle"></h2>
+      <canvas id="endArt" width="48" height="24"></canvas>
+      <p id="endText"></p>
+      <button class="btn big" id="againBtn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="momGame">
+    <div class="dialog mini">
+      <h2>MOM NEEDS <span>YOU!</span></h2>
+      <p id="momSay"></p>
+      <canvas id="momCanvas" width="192" height="80"></canvas>
+      <p class="keys" id="momHint"></p>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="helpScreen">
+    <div class="dialog">
+      <h2>HOW TO PLAY</h2>
+      <ul class="rules">
+        <li>Each turn: <b>ROLL</b> &rarr; Chaos event &rarr; click a glowing tile (or <b>STAY</b>). The phone loses 1 ring.</li>
+        <li>Reach Dad's tile to deliver the phone. If the rings hit 0, the call is missed.</li>
+        <li><b>Walls &amp; furniture</b> block you. <b>Toys</b> block you unless MEGA-BOT, your hero figurine, clears the way.</li>
+        <li><b>Every game is a new house.</b> Rooms connect to each other in different ways each time, so look for loops!</li>
+        <li><b>Stuck door</b> (the door with the brass keyhole): a big shortcut. Walk into it (orange tile) to jiggle the handle: 4&ndash;6 it opens for good, 1&ndash;3 it's jammed (&minus;1 ring) and you can try again later. MEGA-BOT opens it for sure.</li>
+        <li><b>Laundry chute</b> (the two hatches with a down arrow, in rooms far apart): stop on one end to slide across. It's risky: there's a 1 in 3 chance you get stuck (&minus;1 ring).</li>
+        <li>Yellow tiles mean MEGA-BOT has to help you get there (that uses up his help).</li>
+      </ul>
+      <button class="btn big" id="helpClose">GOT IT</button>
+    </div>
+  </div>
+
+  <script src="board.js"></script>
+  <script src="gen.js"></script>
+  <script src="game.js"></script>
+  <script src="sprites.js"></script>
+  <script src="render.js"></script>
+  <script src="audio.js"></script>
+  <script src="minigame.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
